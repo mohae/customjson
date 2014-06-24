@@ -1,8 +1,8 @@
-// Copyright 2010 The Go Authors.  All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+// copyright 2010 the go authors.  all rights reserved.
+// use of this source code is governed by a bsd-style
+// license that can be found in the license file.
 
-package json
+package customjson
 
 import (
 	"bytes"
