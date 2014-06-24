@@ -9,4 +9,4 @@ Rather than hack some solution, it seemed better to clone the package and patch 
 
 All code contained in this package, with the exception of the modifications necessary to elide the HTML escaping of <,>,&, was originally written by The Go Authors and is licensed using BSD. Please refer to the LICENSE file for more information.
 
-Usage: Same as the Go encode/json package. Use when you don't want the marshalled JSON to be HTMLEscaped. Please note that the JSON output from this package is not safe for use in browsers or use within the HTML <script> tags. For those scenarios, Go's enconding/json package should be used as it is designed for those use cases.
+Usage: Same as the Go encode/json package. Use when you don't want the marshalled JSON to be HTMLEscaped. Please note that the JSON output from this package is not safe for use in browsers or use within the HTML \<script\> tags. For those scenarios, Go's enconding/json package should be used as it is designed for those use cases.
