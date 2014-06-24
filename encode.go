@@ -752,7 +752,7 @@ func (e *encodeState) string(s string) (int, error) {
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
-			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
+			if 0x20 <= b && b != '\\' && b != '"' {
 				i++
 				continue
 			}
@@ -769,6 +769,12 @@ func (e *encodeState) string(s string) (int, error) {
 			case '\r':
 				e.WriteByte('\\')
 				e.WriteByte('r')
+			case '<':
+				e.WriteByte('<')
+			case '>':
+				e.WriteByte('>')
+			case '&':
+				e.WriteByte('&')
 			default:
 				// This encodes bytes < 0x20 except for \n and \r,
 				// as well as <, > and &. The latter are escaped because they
@@ -825,7 +831,7 @@ func (e *encodeState) stringBytes(s []byte) (int, error) {
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
-			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
+			if 0x20 <= b && b != '\\' && b != '"' {
 				i++
 				continue
 			}
@@ -842,6 +848,12 @@ func (e *encodeState) stringBytes(s []byte) (int, error) {
 			case '\r':
 				e.WriteByte('\\')
 				e.WriteByte('r')
+			case '<':
+				e.WriteByte('<')
+			case '>':
+				e.WriteByte('>')
+			case '&':
+				e.WriteByte('&')
 			default:
 				// This encodes bytes < 0x20 except for \n and \r,
 				// as well as < and >. The latter are escaped because they
