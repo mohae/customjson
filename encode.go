@@ -42,9 +42,11 @@ import (
 //
 // String values encode as JSON strings. InvalidUTF8Error will be returned
 // if an invalid UTF-8 sequence is encountered.
-// The angle brackets "<" and ">" are escaped to "\u003c" and "\u003e"
-// to keep some browsers from misinterpreting JSON output as HTML.
-// Ampersand "&" is also escaped to "\u0026" for the same reason.
+// Unlike Go's encoding/json package, the angle brackets "<" and ">" are 
+// not escaped to "\u003c" and "\u003e"; they are preserved. Ampersand "&"
+// is also not escaped to "\u0026". This makes the JSON produced by this
+// package unsuitable for use in web browser scenarios or within the <HTML>
+// script tag.
 //
 // Array and slice values encode as JSON arrays, except that
 // []byte encodes as a base64-encoded string, and a nil slice
