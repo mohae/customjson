@@ -1180,3 +1180,31 @@ func MarshalIndentToString(v interface{}, prefix, indent string) string {
 	
 	return string(json)
 }
+
+// MarshalToString is a struct to wrap the MarshalIndentToString function. This
+// simplifies the use of MarshalIndentToString as all that needs to be passed
+// is the interface to be marshalled to a string.
+//
+// The defaults for MarshalToString are the most commonly used, imo:
+//       prefix: ""
+//       indent: "        "
+//
+// To override the defaults, at construction time, use New().
+// Each of these settings can be overridden individually too.
+type MarshalToString struct {
+	prefix = ""
+	indent = "       "
+}
+
+
+func (m *MarshalToString) Prefix(s string) {
+	m.prefix = s
+}
+
+func (m *MarshalToString) Indent(s string) {
+	m.indent = s
+}
+
+func (m *MarshalToString) GetIndented(v interface{}) string {
+	return MarshalIndentToString(v, m.prefix, m.indent)
+}
