@@ -1192,12 +1192,11 @@ func MarshalIndentToString(v interface{}, prefix, indent string) string {
 // To override the defaults, at construction time, use New().
 // Each of these settings can be overridden individually too.
 type MarshalToString struct {
-	prefix 
-	indent
+	prefix, indent string 
 }
 
 func NewMarshalToString() *MarshalToString {
-	return &MarshalToString{prefix: "", indent: "    "}
+	return &MarshalToString{indent: "    "}
 }
 
 func (m *MarshalToString) Prefix(s string) {
