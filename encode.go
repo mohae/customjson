@@ -1197,7 +1197,7 @@ type MarshalToString struct {
 }
 
 func NewMarshalToString() *MarshalToString {
-	return &MarshalToString{prefix: "", indent: "    "
+	return &MarshalToString{prefix: "", indent: "    "}
 }
 
 func (m *MarshalToString) Prefix(s string) {
