@@ -1,12 +1,27 @@
 CustomJSON
 ==========
 
-A fork of Go's encoding/json package.
+A fork of Go's encoding/json package for customization.
 
-Main purpose, at time of creation, is to provide a marshaller that doesn't HTMLEscape the marshalled bytes. While this is useful for HTML and browser usage, this is neither helpful or useful in some situations. One example are (Packer)[www.packer.io] templates, which may have inlined bash commands. HTMLEscaping the bash commands is not desirable, as all of the original encoding values must be preserved.
+All code contained in this package, with the exception of the modifications necessary to enable the changes listed below, along with the updating of affected tests, were originally written by The Go Authors. 
 
-Rather than hack some solution, it seemed better to clone the package and patch it for the desired behavior.
+Usage: Same as the Go encode/json package. Use when you don't want the marshalled JSON to be HTMLEscaped. Please note that the JSON output from this package is not safe for use in browsers or use within the HTML `<script>` tags. For those scenarios, Go's enconding/json package should be used as it is designed for those use cases.
 
-All code contained in this package, with the exception of the modifications necessary to elide the HTML escaping of <,>,&, along with the updating of affected tests, were originally written by The Go Authors.
+Changes:
+* Elided code responsible for the HTML escaping of `<`, `>`, `&` and associated tests.
+* Elided HTMLEscape() and related tests.
+* Added MarshalIndentToString() function, which wraps MarshalIndent and returns a string.* 
 
-Usage: Same as the Go encode/json package. Use when you don't want the marshalled JSON to be HTMLEscaped. Please note that the JSON output from this package is not safe for use in browsers or use within the HTML \<script\> tags. For those scenarios, Go's enconding/json package should be used as it is designed for those use cases.
+## Elided HTML Escape functionality
+Main purpose, at time of creation, was to provide a marshaller that doesn't HTMLEscape the marshalled bytes. While this is useful for HTML and browser usage, this is neither helpful nor useful in some situations. One example is the creation of [Packer](www.packer.io) templates, which may have inlined bash commands. HTMLEscaping the bash commands is not desirable, as all of the original encoding values must be preserved.
+
+The strings which are no longer HTMLEscaped are `<`, `>`, `&`
+
+## Added MarshalIndentToString(f(v interface{}, prefix, indent string) string {}
+MarshallIndentToString provides a convenient way of converting something to JSON and then returning a *string* version of it. Since MarshallIndentToString only has a single return value, which is a *string*, it is easy to use whenever you want an formatted string version of any *interface{}*, e.g. printing out a struct value.
+
+    fmt.Println(json.MarshallIndentToString(someInterface, "", "        "))
+    
+The above would print a formatted version of `someInterface{}`.
+
+MarshallIndentToString wraps a call to MarshallIndent. If an error occurs, the error information is discarded an an empty string, `""`, is returned. If you need the error information, call MarshallIndent() instead. Otherwise, the *[]byte* is converted to a *string* and returned.
