@@ -8,6 +8,15 @@
 //
 // See "JSON and Go" for an introduction to this package:
 // http://golang.org/doc/articles/json_and_go.html
+//
+// customjson customizes the go JSON package.
+// Deltas:
+//	* elided HTMLEscape functionality so that the original string will be
+// 	  returned. This is needed for bash command preservation when bash
+//	  commands are embedded in the JSON object.
+//	* MarshalIndentToString: wraps MarshalIndent except it returns the 
+//	  marshalled JSON object as a string, instead of a []byte. This is
+//	  useful for trace logging and debugging.
 package customjson
 
 import (
@@ -1152,4 +1161,22 @@ func cachedTypeFields(t reflect.Type) []field {
 	fieldCache.m[t] = f
 	fieldCache.Unlock()
 	return f
+}
+
+// MarshalIndentToString wraps MarshalIndent, converting the []byte to a string
+// before returning the result, if it didn't error. Errors are thrown away and
+// an empty string is returned.
+//
+// Not ideal to ignore errors but since this function is designed to create a
+// readable printout, i.e. MarshalIndent'd, version of an interface, in JSON.
+// This makes it useful for debugging, logging, etc.
+//
+// If error check is necessary, call MarshalIndent first.
+func MarshalIndentToString(v interface{}, prefix, indent string) string {
+	json, err := MarshalIndent(v, prefix, indent)
+	if err != nil {
+		return ""
+	}
+	
+	return string(json)
 }
