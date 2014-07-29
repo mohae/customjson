@@ -69,3 +69,8 @@ Example:
 		fmt.Println(marshalString.Get(bulls))
 		fmt.Println(marshalString.GetIndented(bulls))
 	}
+
+## Notes
+I am reconsidering the elision of the HTMLEscape function as it doesn't affect the behavior that this fork of the `json` package was supposed to address. Since this is an exported function that others can use, when needed, it seems useful to leave it in.
+
+Onl considering because I have higher priority code atm. It will be done at some point in the future. This will be signified by both a related commit and revision of this document.
