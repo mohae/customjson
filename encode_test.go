@@ -436,3 +436,19 @@ func TestMarshalIndentToString(t *testing.T) {
 		t.Errorf("MarshalIndentToString(interface{}, \"\", \"    \") = %#s; want %#q", foo, want)
 	}
 }
+
+func TestMarshalToString(t *testing.T) {
+	type Foo struct {
+		Bar	string
+	}
+
+	foo := Foo{Bar: "bar"}
+	FooJSON := MarshalToString(foo)
+	if FooJSON == "" {
+		t.Errorf("MarshalIndentToString: Marshalling FooJSON to a JSON string errored. Actual error unknown as MarshalIndentToString discards MarshalIndent's error" )
+	}
+	
+	if want := "{\"Bar\":\"bar\"}"; FooJSON != want {
+		t.Errorf("MarshalIndentToString(interface{}, \"\", \"    \") = %#q; want %#q", foo, want)
+	}
+}

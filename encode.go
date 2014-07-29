@@ -1181,6 +1181,25 @@ func MarshalIndentToString(v interface{}, prefix, indent string) string {
 	return string(json)
 }
 
+// MarshalIndentToString wraps MarshalIndent, converting the []byte to a string
+// before returning the result, if it didn't error. Errors are thrown away and
+// an empty string is returned.
+//
+// Not ideal to ignore errors but since this function is designed to create a
+// readable printout, i.e. MarshalIndent'd, version of an interface, in JSON.
+// This makes it useful for debugging, logging, etc.
+//
+// If error check is necessary, call MarshalIndent first.
+func MarshalToString(v interface{}) string {
+	json, err := Marshal(v)
+	if err != nil {
+		return ""
+	}
+	
+	return string(json)
+}
+
+
 // MarshalToString is a struct to wrap the MarshalIndentToString function. This
 // simplifies the use of MarshalIndentToString as all that needs to be passed
 // is the interface to be marshalled to a string.
@@ -1191,22 +1210,27 @@ func MarshalIndentToString(v interface{}, prefix, indent string) string {
 //
 // To override the defaults, at construction time, use New().
 // Each of these settings can be overridden individually too.
-type MarshalToString struct {
+type StringMarshaller  struct {
 	prefix, indent string 
 }
 
-func NewMarshalToString() *MarshalToString {
-	return &MarshalToString{indent: "    "}
+func NewStringMarshaller() *StringMarshaller {
+	return &StringMarshaller{indent: "    "}
 }
 
-func (m *MarshalToString) Prefix(s string) {
+
+func (m *StringMarshaller) Prefix(s string) {
 	m.prefix = s
 }
 
-func (m *MarshalToString) Indent(s string) {
+func (m *StringMarshaller) Indent(s string) {
 	m.indent = s
 }
 
-func (m *MarshalToString) GetIndented(v interface{}) string {
+func (m *StringMarshaller) GetIndented(v interface{}) string {
 	return MarshalIndentToString(v, m.prefix, m.indent)
+}
+
+func (m *StringMarshaller) Get(v interface {}) string {
+	return MarshalToString(v)
 }
