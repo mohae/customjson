@@ -18,10 +18,54 @@ Main purpose, at time of creation, was to provide a marshaller that doesn't HTML
 The strings which are no longer HTMLEscaped are `<`, `>`, `&`
 
 ## Added MarshalIndentToString(f(v interface{}, prefix, indent string) string {}
-MarshallIndentToString provides a convenient way of converting something to JSON and then returning a *string* version of it. Since MarshallIndentToString only has a single return value, which is a *string*, it is easy to use whenever you want an formatted string version of any *interface{}*, e.g. printing out a struct value.
+MarshalIndentToString provides a convenient way of converting something to JSON and then returning a *string* version of it. Since MarshallIndentToString only has a single return value, which is a *string*, it is easy to use whenever you want to see a JSON version of a struct in a formatted string version.  This is helpful in debugging because it can expose some information that can be elided when being printed out, e.g. nil being displayed as nulls, display of quotees, etc. Adding the Indent to the string output makes complex structures more parsable by humans.
 
-    fmt.Println(json.MarshallIndentToString(someInterface, "", "        "))
+    fmt.Println(json.MarshalIndentToString(someInterface, "", "        "))
     
-The above would print a formatted version of `someInterface{}`.
+The above would print a JSON version of `someInterface{}` as a formatted string.
 
-MarshallIndentToString wraps a call to MarshallIndent. If an error occurs, the error information is discarded an an empty string, `""`, is returned. If you need the error information, call MarshallIndent() instead. Otherwise, the *[]byte* is converted to a *string* and returned.
+MarshalIndentToString wraps a call to MarshalIndent. If an error occurs, the error information is discarded an an empty string, `""`, is returned. If you need the error information, call MarshalIndent() instead. Otherwise, the *[]byte* is converted to a *string* and returned.
+
+## Added MarshalToString(f(v interface{}) string {}
+MarshallToString provides a convenient way of converting something to JSON and then returning a *string* version of it. Since MarshallToString only has a single return value, which is a *string*, it is easy to use whenever you want to see a JSON version of a struct. This is helpful in debugging because it can expose some information that can be elided when being printed out, e.g. nil being displayed as nulls, display of quotees, etc. This can be useful in testing.
+
+    fmt.Println(json.MarshalToString(someInterface))
+    
+The above would print a JSON version of `someInterface{}` as a string.
+
+MarshalToString wraps a call to Marshal. If an error occurs, the error information is discarded an an empty string, `""`, is returned. If you need the error information, call MarshalIndent() instead. Otherwise, the *[]byte* is converted to a *string* and returned.
+
+## Added StringMarshaller struct
+The `StringMarshaller` struct provides an easy, compact way of using its `customjson`'s `MarshalToString` and `MarshalIndentToString` functions. `StringMarshaller` offers two Get methods that wrap access to `MarshalToString` and `MarshalIndentToString`, making calls to these functions more compact.
+
+To use, call `customjson.NewStringMarshaller()` and a `StringMarshaller` will be returned with its defaults set. To override the defaults, call `StringMarshaller.Indent(string)` and `StringMarshaller.Prefix(string)`. Each method sets their respective unexported variable. Otherwise the default of `""` and `    ` will be used.
+
+Currently there are two methods on `StringMarshaller`:
+
+**Get**_(interface{}) string_: Takes an interface and returns it as a JSON object converted to a string.
+**GetIndented**_(interface{}) string_: Takes an interface and returns it as a JSON object coverted to a formatted string, i.e. indented.
+
+Example:
+	package main
+
+	import (
+		"fmt"
+	
+		json "github.com/mohae/customjson"
+	)
+	
+	type team struct {
+		City	string
+		Name	string
+		Mascot	string
+	}
+
+	func  main() {
+
+		//Create a new StringMarshaller
+		marshalString := json.NewStringMarshaller()
+
+		bulls := &team{City: "Chicago", Name: "Bulls", Mascot: "Benny the Bull"}			
+		fmt.Println(marshalString.Get(bulls))
+		fmt.Println(marshalString.GetIndented(bulls))
+	}
