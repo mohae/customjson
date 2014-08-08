@@ -1200,37 +1200,37 @@ func MarshalToString(v interface{}) string {
 }
 
 
-// MarshalToString is a struct to wrap the MarshalIndentToString function. This
-// simplifies the use of MarshalIndentToString as all that needs to be passed
-// is the interface to be marshalled to a string.
+// MarshalString is a struct to wrap the MarshalToString functions. This is
+// mainly to simplify the use of MarshalIndentToString as all that needs to
+// be passed is the interface to be marshalled to a string.
 //
 // The defaults for MarshalToString are the most commonly used, imo:
 //       prefix: ""
 //       indent: "        "
 //
-// To override the defaults, at construction time, use New().
-// Each of these settings can be overridden individually too.
-type StringMarshaller  struct {
+// Each of these settings can be overridden individually by calling its
+// respective public method.
+type MarshalString  struct {
 	prefix, indent string 
 }
 
-func NewStringMarshaller() *StringMarshaller {
-	return &StringMarshaller{indent: "    "}
+func NewMarshalString() *MarshalString {
+	return &MarshalString{indent: "    "}
 }
 
 
-func (m *StringMarshaller) Prefix(s string) {
+func (m *MarshalString) Prefix(s string) {
 	m.prefix = s
 }
 
-func (m *StringMarshaller) Indent(s string) {
+func (m *MarshalString) Indent(s string) {
 	m.indent = s
 }
 
-func (m *StringMarshaller) GetIndented(v interface{}) string {
+func (m *MarshalString) GetIndented(v interface{}) string {
 	return MarshalIndentToString(v, m.prefix, m.indent)
 }
 
-func (m *StringMarshaller) Get(v interface {}) string {
+func (m *MarshalString) Get(v interface {}) string {
 	return MarshalToString(v)
 }
