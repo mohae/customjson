@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package customjson
+package json
 
 import (
 	"bytes"
@@ -227,6 +227,28 @@ func (CText) MarshalText() ([]byte, error) {
 	return []byte(`"<&>"`), nil
 }
 
+func TestMarshalerEscaping(t *testing.T) {
+	var c C
+	want := `"\u003c\u0026\u003e"`
+	b, err := Marshal(c)
+	if err != nil {
+		t.Fatalf("Marshal(c): %v", err)
+	}
+	if got := string(b); got != want {
+		t.Errorf("Marshal(c) = %#q, want %#q", got, want)
+	}
+
+	var ct CText
+	want = `"\"\u003c\u0026\u003e\""`
+	b, err = Marshal(ct)
+	if err != nil {
+		t.Fatalf("Marshal(ct): %v", err)
+	}
+	if got := string(b); got != want {
+		t.Errorf("Marshal(ct) = %#q, want %#q", got, want)
+	}
+}
+
 type IntType int
 
 type MyStruct struct {
@@ -421,34 +443,12 @@ func TestIssue6458(t *testing.T) {
 	}
 }
 
-func TestMarshalIndentToString(t *testing.T) {
-	type Foo struct {
-		Bar	string
-	}
-
-	foo := Foo{Bar: "bar"}
-	FooJSON := MarshalIndentToString(foo, "", "    ")
-	if FooJSON == "" {
-		t.Errorf("MarshalIndentToString: Marshalling FooJSON to a JSON string errored. Actual error unknown as MarshalIndentToString discards MarshalIndent's error" )
-	}
-	
-	if want := "{\n    \"Bar\": \"bar\"\n}"; FooJSON != want {
-		t.Errorf("MarshalIndentToString(interface{}, \"\", \"    \") = %#s; want %#q", foo, want)
-	}
-}
-
-func TestMarshalToString(t *testing.T) {
-	type Foo struct {
-		Bar	string
-	}
-
-	foo := Foo{Bar: "bar"}
-	FooJSON := MarshalToString(foo)
-	if FooJSON == "" {
-		t.Errorf("MarshalIndentToString: Marshalling FooJSON to a JSON string errored. Actual error unknown as MarshalIndentToString discards MarshalIndent's error" )
-	}
-	
-	if want := "{\"Bar\":\"bar\"}"; FooJSON != want {
-		t.Errorf("MarshalIndentToString(interface{}, \"\", \"    \") = %#q; want %#q", foo, want)
+func TestHTMLEscape(t *testing.T) {
+	var b, want bytes.Buffer
+	m := `{"M":"<html>foo &` + "\xe2\x80\xa8 \xe2\x80\xa9" + `</html>"}`
+	want.Write([]byte(`{"M":"\u003chtml\u003efoo \u0026\u2028 \u2029\u003c/html\u003e"}`))
+	HTMLEscape(&b, []byte(m))
+	if !bytes.Equal(b.Bytes(), want.Bytes()) {
+		t.Errorf("HTMLEscape(&b, []byte(m)) = %s; want %s", b.Bytes(), want.Bytes())
 	}
 }

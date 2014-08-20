@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package customjson
+package json
 
 import (
 	"bytes"
@@ -281,12 +281,6 @@ func genString(stddev float64) string {
 		}
 		c[i] = rune(f)
 	}
-/*
-	// Replace the encoded <,>, & with their actual values
-	ret := strings.Replace(string(c), "\u003c", "<", -1)
-	ret = strings.Replace(ret, "\u003e", ">", -1)
-	ret = strings.Replace(ret, "\u0026", "&", -1)
-*/
 	return string(c)
 }
 

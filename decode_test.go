@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package customjson
+package json
 
 import (
 	"bytes"
@@ -655,7 +655,7 @@ func TestUnmarshalPtrPtr(t *testing.T) {
 
 func TestEscape(t *testing.T) {
 	const input = `"foobar"<html>` + " [\u2028 \u2029]"
-	const expected = `"\"foobar\"<html> [\u2028 \u2029]"`
+	const expected = `"\"foobar\"\u003chtml\u003e [\u2028 \u2029]"`
 	b, err := Marshal(input)
 	if err != nil {
 		t.Fatalf("Marshal error: %v", err)

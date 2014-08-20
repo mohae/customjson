@@ -9,15 +9,15 @@
 // See "JSON and Go" for an introduction to this package:
 // http://golang.org/doc/articles/json_and_go.html
 //
-// customjson customizes the go JSON package.
+// customjson customizes the Go JSON package. DO NOT USE if the output of
+// the encoded json is meant for HTML.
+//
 // Deltas:
-//	* elided HTMLEscape functionality so that the original string will be
-// 	  returned. This is needed for bash command preservation when bash
-//	  commands are embedded in the JSON object.
-//	* MarshalIndentToString: wraps MarshalIndent except it returns the 
-//	  marshalled JSON object as a string, instead of a []byte. This is
-//	  useful for trace logging and debugging.
-package customjson
+//	* elided the encoding of <, >, & to a html safe format, which is fine
+//	  for HTML output, but not desirable for certain situations: e.g.
+//        outputting embedded shell commands within a JSON file.
+//      * Add MarshalToString functions and helper objects.
+package json
 
 import (
 	"bytes"
@@ -51,11 +51,9 @@ import (
 //
 // String values encode as JSON strings. InvalidUTF8Error will be returned
 // if an invalid UTF-8 sequence is encountered.
-// Unlike Go's encoding/json package, the angle brackets "<" and ">" are 
-// not escaped to "\u003c" and "\u003e"; they are preserved. Ampersand "&"
-// is also not escaped to "\u0026". This makes the JSON produced by this
-// package unsuitable for use in web browser scenarios or within the <HTML>
-// script tag.
+// The angle brackets "<" and ">" are escaped to "\u003c" and "\u003e"
+// to keep some browsers from misinterpreting JSON output as HTML.
+// Ampersand "&" is also escaped to "\u0026" for the same reason.
 //
 // Array and slice values encode as JSON arrays, except that
 // []byte encodes as a base64-encoded string, and a nil slice
@@ -162,6 +160,40 @@ func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
+// characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029
+// so that the JSON will be safe to embed inside HTML <script> tags.
+// For historical reasons, web browsers don't honor standard HTML
+// escaping within <script> tags, so an alternative JSON encoding must
+// be used.
+func HTMLEscape(dst *bytes.Buffer, src []byte) {
+	// The characters can only appear in string literals,
+	// so just scan the string one byte at a time.
+	start := 0
+	for i, c := range src {
+		if c == '<' || c == '>' || c == '&' {
+			if start < i {
+				dst.Write(src[start:i])
+			}
+			dst.WriteString(`\u00`)
+			dst.WriteByte(hex[c>>4])
+			dst.WriteByte(hex[c&0xF])
+			start = i + 1
+		}
+		// Convert U+2028 and U+2029 (E2 80 A8 and E2 80 A9).
+		if c == 0xE2 && i+2 < len(src) && src[i+1] == 0x80 && src[i+2]&^1 == 0xA8 {
+			if start < i {
+				dst.Write(src[start:i])
+			}
+			dst.WriteString(`\u202`)
+			dst.WriteByte(hex[src[i+2]&0xF])
+			start = i + 3
+		}
+	}
+	if start < len(src) {
+		dst.Write(src[start:])
+	}
+}
 
 // Marshaler is the interface implemented by objects that
 // can marshal themselves into valid JSON.
@@ -842,7 +874,7 @@ func (e *encodeState) stringBytes(s []byte) (int, error) {
 	start := 0
 	for i := 0; i < len(s); {
 		if b := s[i]; b < utf8.RuneSelf {
-			if 0x20 <= b && b != '\\' && b != '"' {
+			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
 				i++
 				continue
 			}
@@ -859,12 +891,6 @@ func (e *encodeState) stringBytes(s []byte) (int, error) {
 			case '\r':
 				e.WriteByte('\\')
 				e.WriteByte('r')
-			case '<':
-				e.WriteByte('<')
-			case '>':
-				e.WriteByte('>')
-			case '&':
-				e.WriteByte('&')
 			default:
 				// This encodes bytes < 0x20 except for \n and \r,
 				// as well as < and >. The latter are escaped because they
@@ -1161,76 +1187,4 @@ func cachedTypeFields(t reflect.Type) []field {
 	fieldCache.m[t] = f
 	fieldCache.Unlock()
 	return f
-}
-
-// MarshalIndentToString wraps MarshalIndent, converting the []byte to a string
-// before returning the result, if it didn't error. Errors are thrown away and
-// an empty string is returned.
-//
-// Not ideal to ignore errors but since this function is designed to create a
-// readable printout, i.e. MarshalIndent'd, version of an interface, in JSON.
-// This makes it useful for debugging, logging, etc.
-//
-// If error check is necessary, call MarshalIndent first.
-func MarshalIndentToString(v interface{}, prefix, indent string) string {
-	json, err := MarshalIndent(v, prefix, indent)
-	if err != nil {
-		return ""
-	}
-	
-	return string(json)
-}
-
-// MarshalIndentToString wraps MarshalIndent, converting the []byte to a string
-// before returning the result, if it didn't error. Errors are thrown away and
-// an empty string is returned.
-//
-// Not ideal to ignore errors but since this function is designed to create a
-// readable printout, i.e. MarshalIndent'd, version of an interface, in JSON.
-// This makes it useful for debugging, logging, etc.
-//
-// If error check is necessary, call MarshalIndent first.
-func MarshalToString(v interface{}) string {
-	json, err := Marshal(v)
-	if err != nil {
-		return ""
-	}
-	
-	return string(json)
-}
-
-
-// MarshalString is a struct to wrap the MarshalToString functions. This is
-// mainly to simplify the use of MarshalIndentToString as all that needs to
-// be passed is the interface to be marshalled to a string.
-//
-// The defaults for MarshalToString are the most commonly used, imo:
-//       prefix: ""
-//       indent: "        "
-//
-// Each of these settings can be overridden individually by calling its
-// respective public method.
-type MarshalString  struct {
-	prefix, indent string 
-}
-
-func NewMarshalString() *MarshalString {
-	return &MarshalString{indent: "    "}
-}
-
-
-func (m *MarshalString) Prefix(s string) {
-	m.prefix = s
-}
-
-func (m *MarshalString) Indent(s string) {
-	m.indent = s
-}
-
-func (m *MarshalString) GetIndented(v interface{}) string {
-	return MarshalIndentToString(v, m.prefix, m.indent)
-}
-
-func (m *MarshalString) Get(v interface {}) string {
-	return MarshalToString(v)
 }
