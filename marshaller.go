@@ -1,7 +1,7 @@
 // Copyright 2014, Joel Scoble (github.com/mohae): All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file
-// 
+//
 package customjson
 
 // MarshalIndentToString wraps MarshalIndent, converting the []byte to a string
@@ -18,7 +18,7 @@ func MarshalIndentToString(v interface{}, prefix, indent string) string {
 	if err != nil {
 		return ""
 	}
-	
+
 	return string(json)
 }
 
@@ -36,10 +36,9 @@ func MarshalToString(v interface{}) string {
 	if err != nil {
 		return ""
 	}
-	
+
 	return string(json)
 }
-
 
 // MarshalString is a struct to wrap the MarshalToString functions. This is
 // mainly to simplify the use of MarshalIndentToString as all that needs to
@@ -51,14 +50,13 @@ func MarshalToString(v interface{}) string {
 //
 // Each of these settings can be overridden individually by calling its
 // respective public method.
-type MarshalString  struct {
-	prefix, indent string 
+type MarshalString struct {
+	prefix, indent string
 }
 
 func NewMarshalString() *MarshalString {
 	return &MarshalString{indent: "    "}
 }
-
 
 func (m *MarshalString) Prefix(s string) {
 	m.prefix = s
@@ -72,6 +70,6 @@ func (m *MarshalString) GetIndented(v interface{}) string {
 	return MarshalIndentToString(v, m.prefix, m.indent)
 }
 
-func (m *MarshalString) Get(v interface {}) string {
+func (m *MarshalString) Get(v interface{}) string {
 	return MarshalToString(v)
 }
