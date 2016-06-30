@@ -1,7 +1,11 @@
-CustomJSON
+UnsafeJSON
 ==========
 
-A fork of Go's encoding/json package for customization.
+__Use at your own risk.__
+
+A fork of Go's encoding/json package that doesn't escape the marshaled JSON.  Go's stdlib JSON package does escaping for safety reasons and should be preferred over this package.  Only use this if it is safe to not escape the JSON.  Improper usage of this package may lead to security issues and other problems.
+
+This package also contains some convenience funcs and a convenience struct, which are described below.
 
 All code contained in this package, with the exception of the modifications necessary to enable the changes listed below, along with the updating of affected tests, were originally written by The Go Authors. 
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file
 //
-package customjson
+package unsafejson
 
 // MarshalIndentToString wraps MarshalIndent, converting the []byte to a string
 // before returning the result, if it didn't error. Errors are thrown away and

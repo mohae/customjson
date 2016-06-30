@@ -17,7 +17,7 @@
 //	  for HTML output, but not desirable for certain situations: e.g.
 //        outputting embedded shell commands within a JSON file.
 //      * Add MarshalToString functions and helper objects.
-package customjson
+package unsafejson
 
 import (
 	"bytes"

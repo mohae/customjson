@@ -5,7 +5,7 @@
 // Represents JSON data structure using native Go types: booleans, floats,
 // strings, arrays, and maps.
 
-package customjson
+package unsafejson
 
 import (
 	"bytes"
